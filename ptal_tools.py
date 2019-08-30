@@ -6,6 +6,8 @@ import requests
 from geopy.distance import geodesic
 from scipy.spatial.distance import cdist
 
+osrm_error_msg = '''⚠️ OSRM url not specified ⚠️'''
+
 def create_fishnet(minlon, maxlon, minlat,  maxlat, cellsize):
     rows = ceil((maxlat - minlat) / cellsize)
     cols = ceil((maxlon - minlon) / cellsize)
@@ -45,7 +47,9 @@ def frequency_on_stops(trips, routes, stop_times):
     df = pd.merge(df, routes, on='route_id')[['stop_id', 'route_id', 'route_type', 'frequency']]
     return df
             
-def osrm_route_duration(x1,y1,x2,y2, osrm_url='http://127.0.0.1:5000/route/v1/foot/'):
+def osrm_route_duration(x1,y1,x2,y2, osrm_url):
+    if not osrm_url:
+        raise ValueError(osrm_error_msg)
     req = osrm_url+'%f,%f;%f,%f'%(x1, y1, x2, y2)
     r = requests.get(req)
     duration = r.json()['routes'][0]['duration'] / 60                    
