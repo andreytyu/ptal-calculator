@@ -1,0 +1,6 @@
+pandas
+geopandas
+requests
+geopy
+scipy
+tqdm
