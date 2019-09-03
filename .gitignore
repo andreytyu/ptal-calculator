@@ -1,3 +1,3 @@
 .DS_Store
 /ptal_gtfs
-grid.geojson
+*.geojson
