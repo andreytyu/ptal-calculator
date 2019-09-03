@@ -1,3 +1,4 @@
 .DS_Store
 /ptal_gtfs
 *.geojson
+__pycache__
