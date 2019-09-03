@@ -1,0 +1,11 @@
+version: '3'
+services:
+  ptal:
+    build: .
+    image: ptal
+    networks:
+     - default
+
+networks:    
+  local-network:
+    external: true
