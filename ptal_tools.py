@@ -39,7 +39,8 @@ def create_fishnet(minlon, maxlon, minlat,  maxlat, cellsize):
     return fishnet
 
 def frequency_on_stops(trips, routes, stop_times):
-    stop_times = stop_times[(stop_times['arrival_time'] >= '8:15:00') & (stop_times['arrival_time'] <= '9:15:00')].reset_index(drop=True)
+    stop_times['arrival_time'] = stop_times['arrival_time'].apply(lambda x: datetime.strptime(x, '%H:%M:%S').time())
+    stop_times = stop_times[( stop_times['arrival_time'] >= datetime.strptime('08:15:00', '%H:%M:%S').time()) & (stop_times['arrival_time'] <= datetime.strptime('09:15:00', '%H:%M:%S').time())].reset_index(drop=True)
     trips_w_types = pd.merge(trips, routes, on='route_id')[['trip_id', 'route_id', 'route_type']]
     df = pd.merge(stop_times, trips_w_types, on='trip_id')[['trip_id','arrival_time','stop_id', 'route_id', 'route_type']]
     df = df.groupby(by=['stop_id','route_id'], as_index=False).count()[['stop_id','route_id','trip_id']]
