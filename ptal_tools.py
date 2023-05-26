@@ -3,6 +3,7 @@ from math import ceil
 from shapely.geometry import Polygon
 import pandas as pd
 import requests
+from datetime import datetime, timedelta
 from geopy.distance import geodesic
 from scipy.spatial.distance import cdist
 
@@ -38,8 +39,20 @@ def create_fishnet(minlon, maxlon, minlat,  maxlat, cellsize):
     fishnet['cell_id'] = range(len(fishnet))
     return fishnet
 
+def fix_time_after_midnight(arrival_time):
+    if int(arrival_time[0:2]) >= 24:
+        time_h = int(arrival_time[0:2])-24
+        time_m = int(arrival_time[3:4])
+        time_s = int(arrival_time[6:7])
+        arrival_time = str(time_h)+':'+str(time_m)+':'+str(time_s)
+        time_obj = datetime.strptime(arrival_time, '%H:%M:%S')
+        time_obj += timedelta(days=1)
+    else:
+        time_obj = datetime.strptime(arrival_time, '%H:%M:%S')
+    return(time_obj)
+
 def frequency_on_stops(trips, routes, stop_times):
-    stop_times = stop_times[(stop_times['arrival_time'] >= '8:15:00') & (stop_times['arrival_time'] <= '9:15:00')].reset_index(drop=True)
+    stop_times = stop_times[( stop_times['arrival_time'] >= datetime.strptime('08:15:00', '%H:%M:%S')) & (stop_times['arrival_time'] <= datetime.strptime('09:15:00', '%H:%M:%S'))].reset_index(drop=True)
     trips_w_types = pd.merge(trips, routes, on='route_id')[['trip_id', 'route_id', 'route_type']]
     df = pd.merge(stop_times, trips_w_types, on='trip_id')[['trip_id','arrival_time','stop_id', 'route_id', 'route_type']]
     df = df.groupby(by=['stop_id','route_id'], as_index=False).count()[['stop_id','route_id','trip_id']]

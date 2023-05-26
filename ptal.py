@@ -27,11 +27,13 @@ with open('transformed_58.geojson', 'w') as f:
     f.write(transformed.to_json())
 
 print(transformed)
-grid = t.create_fishnet(transformed.geometry[0].x, transformed.geometry[1].x, transformed.geometry[0].y,  transformed.geometry[1].y, 2000)
+grid = t.create_fishnet(transformed.geometry[0].x, transformed.geometry[1].x, transformed.geometry[0].y,  transformed.geometry[1].y, 1000)
 print(transformed.geometry[0].x, transformed.geometry[1].x, transformed.geometry[0].y,  transformed.geometry[1].y)
 grid.crs = {'init' :'epsg:3857'}
 grid = grid.to_crs(epsg=4326)
 grid['centroid'] = grid['geometry'].centroid
+
+stop_times['arrival_time'] = stop_times['arrival_time'].apply(lambda x: t.fix_time_after_midnight(x))
 
 frequency_df = t.frequency_on_stops(trips, routes, stop_times)
 frequency_df = frequency_df[frequency_df.route_type.isin(range(4))].reset_index(drop=True)
@@ -43,6 +45,7 @@ for x in range(len(frequency_df)):
     else:
         awts.append(swt + 2)
 frequency_df['awt'] = awts
+
 
 ais = []
 for x in tqdm(range(len(grid))):
@@ -61,7 +64,6 @@ for x in tqdm(range(len(grid))):
     stops_to_consider = stops_to_consider.sort_values(by=[
     'stop_name', 'route_id', 'duration'
     ]).drop_duplicates(subset=['stop_name', 'route_id'], keep='first').reset_index(drop=True)
-    
     stops_to_consider['edf'] = 0.5 * (60 / (stops_to_consider['awt'] + stops_to_consider['duration']))
     
     types = stops_to_consider['route_type'].unique()
